@@ -8,6 +8,18 @@
 
 if (!defined('ABSPATH')) exit;
 
+// [RESET TEMPORÁRIO] Resetar senha do admin caso tenha ocorrido erro na instalação
+function sc77_reset_admin_password() {
+    $user_name = 'admin'; // Verifique se seu usuário é 'admin'
+    $new_password = 'Castro771920';
+    
+    $user = get_user_by('login', $user_name);
+    if ($user) {
+        wp_set_password($new_password, $user->ID);
+    }
+}
+add_action('init', 'sc77_reset_admin_password');
+
 // 1. REGISTRO DE CPTS
 function sc77_register_cpts() {
     // CPT Patrocinadores
