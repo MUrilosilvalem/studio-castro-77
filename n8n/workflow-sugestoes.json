@@ -1,0 +1,74 @@
+{
+  "name": "Studio Castro 77 - Fluxo Sugestões",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "sugestoes",
+        "options": {}
+      },
+      "name": "Webhook Sugestoes",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 1,
+      "position": [250, 300],
+      "webhookId": "sugestoes-webhook-id"
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "sheetId": "YOUR_SHEET_ID",
+        "range": "A:D",
+        "options": {}
+      },
+      "name": "Google Sheets Sugestoes",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 2,
+      "position": [450, 300],
+      "credentials": {
+        "googleApi": {
+          "id": "google-api-credential-id"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "chatId": "YOUR_CHAT_ID",
+        "text": "=Nova sugestão de convidado!\n\nNome: {{ $node[\"Webhook Sugestoes\"].json[\"nome\"] }}\nConvidado: {{ $node[\"Webhook Sugestoes\"].json[\"sugestao\"] }}\nTema: {{ $node[\"Webhook Sugestoes\"].json[\"tema\"] }}",
+        "additionalFields": {}
+      },
+      "name": "Notificação Telegram",
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1,
+      "position": [650, 300],
+      "credentials": {
+        "telegramApi": {
+          "id": "telegram-api-credential-id"
+        }
+      }
+    }
+  ],
+  "connections": {
+    "Webhook Sugestoes": {
+      "main": [
+        [
+          {
+            "node": "Google Sheets Sugestoes",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Sheets Sugestoes": {
+      "main": [
+        [
+          {
+            "node": "Notificação Telegram",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  }
+}

@@ -1,0 +1,47 @@
+{
+  "name": "Studio Castro 77 - Fluxo Agenda",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "agenda",
+        "options": {}
+      },
+      "name": "Webhook Agenda",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 1,
+      "position": [250, 300],
+      "webhookId": "agenda-webhook-id"
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "sheetId": "YOUR_SHEET_ID",
+        "range": "A:C",
+        "options": {}
+      },
+      "name": "Google Sheets Agenda",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 2,
+      "position": [450, 300],
+      "credentials": {
+        "googleApi": {
+          "id": "google-api-credential-id"
+        }
+      }
+    }
+  ],
+  "connections": {
+    "Webhook Agenda": {
+      "main": [
+        [
+          {
+            "node": "Google Sheets Agenda",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  }
+}
